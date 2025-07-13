@@ -1,6 +1,7 @@
 class LuckyDrawPicker {
     constructor() {
         this.names = [];
+        this.winners = [];
         this.isPicking = false;
         
         this.initializeElements();
@@ -15,6 +16,8 @@ class LuckyDrawPicker {
         this.namesList = document.getElementById('namesList');
         this.nameCount = document.getElementById('nameCount');
         this.clearAllBtn = document.getElementById('clearAllBtn');
+        this.winnersList = document.getElementById('winnersList');
+        this.clearWinnersBtn = document.getElementById('clearWinnersBtn');
         this.pickerDisplay = document.getElementById('pickerDisplay');
         this.pickBtn = document.getElementById('pickBtn');
         this.resultSection = document.getElementById('resultSection');
@@ -30,6 +33,7 @@ class LuckyDrawPicker {
             if (e.key === 'Enter') this.addName();
         });
         this.clearAllBtn.addEventListener('click', () => this.clearAllNames());
+        this.clearWinnersBtn.addEventListener('click', () => this.clearWinners());
         this.pickBtn.addEventListener('click', () => this.pickRandomWinner());
         this.resultSection.addEventListener('click', () => this.hideResult());
         
@@ -176,6 +180,17 @@ class LuckyDrawPicker {
         this.showNotification('All names cleared!', 'info');
     }
     
+    clearWinners() {
+        if (this.winners.length === 0) {
+            this.showNotification('No winners to clear!', 'info');
+            return;
+        }
+        
+        this.winners = [];
+        this.updateWinnersDisplay();
+        this.showNotification('Winners list cleared!', 'info');
+    }
+    
     updateDisplay() {
         this.nameCount.textContent = this.names.length;
         this.namesList.innerHTML = '';
@@ -197,6 +212,24 @@ class LuckyDrawPicker {
         
         // Update picker display
         this.updatePickerDisplay();
+        
+        // Update winners display
+        this.updateWinnersDisplay();
+    }
+    
+    updateWinnersDisplay() {
+        this.winnersList.innerHTML = '';
+        
+        this.winners.forEach((winner, index) => {
+            const winnerItem = document.createElement('div');
+            winnerItem.className = 'winner-item';
+            winnerItem.style.animationDelay = `${index * 0.1}s`;
+            winnerItem.innerHTML = `
+                <span>${winner}</span>
+                <span class="winner-position">#${index + 1}</span>
+            `;
+            this.winnersList.appendChild(winnerItem);
+        });
     }
     
     updatePickerDisplay() {
@@ -249,6 +282,16 @@ class LuckyDrawPicker {
             // Pick random winner
             const randomIndex = Math.floor(Math.random() * this.names.length);
             const winner = this.names[randomIndex];
+            
+            // Add winner to winners list
+            this.winners.push(winner);
+            
+            // Remove winner from participants
+            this.names.splice(randomIndex, 1);
+            
+            // Update displays
+            this.updateDisplay();
+            this.updateWinnersDisplay();
             
             // Reset picker display
             pickerIcon.textContent = '🎲';
